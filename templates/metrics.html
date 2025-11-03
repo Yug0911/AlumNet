@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Metrics - Alumni Platform{% endblock %}
+
+{% block content %}
+<h1>Platform Metrics</h1>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">User Engagement</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Total Users: {{ total_users }}</li>
+                    <li class="list-group-item">Total Posts: {{ total_posts }}</li>
+                    <li class="list-group-item">Total Messages: {{ total_messages }}</li>
+                    <li class="list-group-item">Total Badges Awarded: {{ total_badges }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Career & Community</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Total Jobs: {{ total_jobs }}</li>
+                    <li class="list-group-item">Total Events: {{ total_events }}</li>
+                    <li class="list-group-item">Mentorship Requests: {{ mentorship_requests }}</li>
+                    <li class="list-group-item">Accepted Mentorships: {{ accepted_mentorships }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="alert alert-info mt-3">
+    <strong>Note:</strong> For search performance, query times are sub-second due to inverted index. Precision and recall depend on data quality.
+</div>
+{% endblock %}

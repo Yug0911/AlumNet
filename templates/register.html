@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Alumni Platform{% endblock %}
+
+{% block content %}
+<script>
+function toggleFields() {
+    var role = document.getElementById('role').value;
+    var alumniField = document.getElementById('alumni_id_field');
+    var facultyField = document.getElementById('faculty_id_field');
+    if (role === 'alumni') {
+        alumniField.style.display = 'block';
+        facultyField.style.display = 'none';
+    } else if (role === 'faculty') {
+        alumniField.style.display = 'none';
+        facultyField.style.display = 'block';
+    } else {
+        alumniField.style.display = 'none';
+        facultyField.style.display = 'none';
+    }
+}
+</script>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="text-center mb-4">Register</h1>
+        <form method="POST" class="card p-4 shadow">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username:</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password:</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="role" class="form-label">Role:</label>
+                <select id="role" name="role" class="form-select" required onchange="toggleFields()">
+                    <option value="student">Student</option>
+                    <option value="alumni">Alumni</option>
+                    <option value="faculty">Faculty</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="alumni_id_field" style="display: none;">
+                <label for="alumni_id" class="form-label">Alumni ID:</label>
+                <input type="text" id="alumni_id" name="alumni_id" class="form-control">
+            </div>
+
+            <div class="mb-3" id="faculty_id_field" style="display: none;">
+                <label for="faculty_id" class="form-label">Faculty ID:</label>
+                <input type="text" id="faculty_id" name="faculty_id" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="batch_year" class="form-label">Batch Year (if alumni/student):</label>
+                <input type="number" id="batch_year" name="batch_year" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="skills" class="form-label">Skills (comma-separated):</label>
+                <input type="text" id="skills" name="skills" class="form-control">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Register</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

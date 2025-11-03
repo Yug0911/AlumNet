@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Job Board - Alumni Platform{% endblock %}
+
+{% block content %}
+<h1>Job Board</h1>
+
+<div class="row">
+    {% if user.role != 'student' %}
+    <div class="col-md-6">
+        <h2>Post a Job</h2>
+        <form method="POST" class="card p-3">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title:</label>
+                <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description:</label>
+                <textarea id="description" name="description" class="form-control" required rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="job_type" class="form-label">Type:</label>
+                <select id="job_type" name="job_type" class="form-select" required>
+                    <option value="internship">Internship</option>
+                    <option value="job">Job</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Post Job</button>
+        </form>
+    </div>
+    {% endif %}
+    <div class="col-md-6">
+        <h2>Available Jobs</h2>
+        {% for job in jobs %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ job.title }}</h5>
+                <p class="card-text">{{ job.description }}</p>
+                <p class="card-text"><strong>Type:</strong> {{ job.job_type }}</p>
+                <small class="text-muted">Posted by {{ job.user.username }} on {{ job.created_at }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

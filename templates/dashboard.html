@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Alumni Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>Welcome, {{ user.username }}!</h1>
+        <p class="text-muted">Role: {{ user.role }}</p>
+
+        <div class="mb-4">
+            <h2>Create Post</h2>
+            <form method="POST" action="{{ url_for('create_post') }}" enctype="multipart/form-data" class="card p-3">
+                <div class="mb-3">
+                    <textarea name="content" class="form-control" placeholder="What's on your mind?" required rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="media" class="form-label">Upload Image/Video (optional):</label>
+                    <input type="file" name="media" id="media" class="form-control" accept="image/*,video/*">
+                </div>
+                <div class="mb-3">
+                    <label for="audience" class="form-label">Audience:</label>
+                    <select name="audience" id="audience" class="form-select">
+                        <option value="all">All</option>
+                        <option value="students">Students</option>
+                        <option value="alumni">Alumni</option>
+                        <option value="teachers">Teachers</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Post</button>
+            </form>
+        </div>
+
+        <h2>Recent Posts</h2>
+        {% for post in posts %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <p class="card-text">{{ post.content }}</p>
+                {% if post.media_type == 'image' %}
+                <img src="{{ url_for('static', filename='uploads/' + post.media_path) }}" class="img-fluid" alt="Post image">
+                {% elif post.media_type == 'video' %}
+                <video controls class="w-100">
+                    <source src="{{ url_for('static', filename='uploads/' + post.media_path) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                {% endif %}
+                <small class="text-muted">By {{ post.user.username }} - {{ post.timestamp }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Quick Links</h5>
+                <a href="{{ url_for('search') }}" class="btn btn-outline-primary mb-2 w-100">Search Alumni</a>
+                <a href="{{ url_for('messages') }}" class="btn btn-outline-secondary mb-2 w-100">Messages</a>
+                <a href="{{ url_for('mentorship') }}" class="btn btn-outline-success mb-2 w-100">Mentorship</a>
+                <a href="{{ url_for('jobs') }}" class="btn btn-outline-info mb-2 w-100">Jobs</a>
+                <a href="{{ url_for('events') }}" class="btn btn-outline-warning mb-2 w-100">Events</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

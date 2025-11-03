@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Alumni Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>Your Profile</h1>
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <input type="text" class="form-control" id="role" name="role" value="{{ user.role }}" readonly>
+                    </div>
+                    {% if user.role in ['alumni', 'student'] %}
+                    <div class="mb-3">
+                        <label for="batch_year" class="form-label">Batch Year</label>
+                        <input type="number" class="form-control" id="batch_year" name="batch_year" value="{{ user.batch_year or '' }}">
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label for="skills" class="form-label">Skills (comma-separated)</label>
+                        <textarea class="form-control" id="skills" name="skills" rows="3">{{ user.skills or '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

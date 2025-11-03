@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - Alumni Platform{% endblock %}
+
+{% block content %}
+<h1>Leaderboard</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>User</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in leaderboard %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ item.user.username }}</td>
+            <td>{{ item.score }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

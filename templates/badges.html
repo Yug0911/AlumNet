@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}My Badges - Alumni Platform{% endblock %}
+
+{% block content %}
+<h1>My Badges</h1>
+{% if badges %}
+<div class="row">
+    {% for badge in badges %}
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">🏆 {{ badge.badge_type }}</h5>
+                <p class="card-text">Earned on {{ badge.earned_date }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-warning">
+    <p>No badges yet. Keep participating!</p>
+</div>
+{% endif %}
+{% endblock %}

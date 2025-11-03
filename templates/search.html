@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Search Alumni - Alumni Platform{% endblock %}
+
+{% block content %}
+<h1>Search Alumni</h1>
+<form method="POST" class="mb-4">
+    <div class="input-group">
+        <input type="text" id="query" name="query" class="form-control" required placeholder="e.g., python 2020 developer">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
+
+{% if results %}
+<h2>Results</h2>
+<div class="row">
+    {% for user in results %}
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ user.username }}</h5>
+                <p class="card-text">Email: {{ user.email }}</p>
+                <p class="card-text">Batch Year: {{ user.batch_year }}</p>
+                <p class="card-text">Skills: {{ user.skills }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

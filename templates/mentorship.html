@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Mentorship - Alumni Platform{% endblock %}
+
+{% block content %}
+<h1>Mentorship</h1>
+
+<div class="row">
+    {% if alumni %}
+    <div class="col-md-6">
+        <h2>Request Mentorship</h2>
+        <form method="POST" action="{{ url_for('request_mentorship') }}" class="card p-3">
+            <div class="mb-3">
+                <label for="mentor_id" class="form-label">Select Mentor:</label>
+                <select name="mentor_id" id="mentor_id" class="form-select" required>
+                    {% for alum in alumni %}
+                    <option value="{{ alum.id }}">{{ alum.username }} - {{ alum.skills }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Request</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if requests %}
+    <div class="col-md-6">
+        <h2>Mentorship Requests</h2>
+        {% for req in requests %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title">From: {{ req.mentee.username }}</h6>
+                <p class="card-text">Status: {{ req.status }}</p>
+                {% if req.status == 'pending' %}
+                <form method="POST" action="{{ url_for('respond_mentorship', id=req.id) }}" class="d-inline">
+                    <button name="status" value="accepted" class="btn btn-success btn-sm me-2">Accept</button>
+                    <button name="status" value="rejected" class="btn btn-danger btn-sm">Reject</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
