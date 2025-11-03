@@ -430,13 +430,41 @@ def search():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     results = []
+    total_results = 0
+    page = int(request.args.get('page', 1))
+    per_page = 15
+
     if request.method == 'POST':
         query = request.form['query']
         inverted_index = build_inverted_index()
         user_ids = search_inverted_index(query, inverted_index)
         ranked_ids = rank_results(user_ids, query, inverted_index)
-        results = [User.query.get(uid) for uid in ranked_ids]
-    return render_template('search.html', results=results)
+        total_results = len(ranked_ids)
+
+        # Pagination
+        start = (page - 1) * per_page
+        end = start + per_page
+        paginated_ids = ranked_ids[start:end]
+        results = [User.query.get(uid) for uid in paginated_ids]
+
+        # Store query in session for pagination links
+        session['search_query'] = query
+    else:
+        # Handle pagination for GET requests
+        query = session.get('search_query', '')
+        if query:
+            inverted_index = build_inverted_index()
+            user_ids = search_inverted_index(query, inverted_index)
+            ranked_ids = rank_results(user_ids, query, inverted_index)
+            total_results = len(ranked_ids)
+
+            start = (page - 1) * per_page
+            end = start + per_page
+            paginated_ids = ranked_ids[start:end]
+            results = [User.query.get(uid) for uid in paginated_ids]
+
+    total_pages = (total_results + per_page - 1) // per_page
+    return render_template('search.html', results=results, query=query, page=page, total_pages=total_pages, total_results=total_results)
 
 @app.route('/logout')
 def logout():

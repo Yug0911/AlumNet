@@ -39,52 +39,63 @@
 
                 {% if results %}
                 <div class="results-section">
-                    <h2 class="mb-4">
-                        <i class="fas fa-users me-2 text-primary"></i>Search Results
-                        <span class="badge bg-primary ms-2">{{ results|length }}</span>
-                    </h2>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">
+                            <i class="fas fa-users me-2 text-primary"></i>Search Results
+                            <span class="badge bg-primary ms-2">{{ total_results }}</span>
+                        </h2>
+                        {% if query %}
+                        <div class="search-query-badge">
+                            <span class="badge bg-light text-dark px-3 py-2">
+                                <i class="fas fa-search me-1"></i>"{{ query }}"
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
 
-                    <div class="row">
+                    <div class="row g-4">
                         {% for user in results %}
-                        <div class="col-lg-6 col-xl-4 mb-4">
-                            <div class="card alumni-card shadow-lg rounded-xl h-100">
+                        <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                            <div class="card alumni-card shadow-sm rounded-lg h-100 border-0">
                                 <div class="card-body p-4">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="avatar-circle-lg me-3">
-                                            <i class="fas fa-user"></i>
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="avatar-container me-3">
+                                            <div class="avatar-circle">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h5 class="card-title mb-1">{{ user.username }}</h5>
-                                            <p class="text-muted small mb-0">
-                                                <i class="fas fa-graduation-cap me-1"></i>Batch {{ user.batch_year }}
-                                            </p>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-1 fw-bold">{{ user.username }}</h6>
+                                            <div class="batch-badge mb-2">
+                                                <i class="fas fa-graduation-cap me-1 text-primary"></i>
+                                                <small class="text-muted">Batch {{ user.batch_year or 'N/A' }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="role-badge">
+                                            <span class="badge bg-{{ 'primary' if user.role == 'alumni' else 'secondary' if user.role == 'faculty' else 'info' }} rounded-pill px-2 py-1">
+                                                {{ user.role | title }}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    <div class="alumni-info">
-                                        <div class="info-item mb-2">
+                                    <div class="contact-info mb-3">
+                                        <div class="info-row mb-2">
                                             <i class="fas fa-envelope text-primary me-2"></i>
-                                            <span>{{ user.email }}</span>
+                                            <span class="small">{{ user.email }}</span>
                                         </div>
                                         {% if user.skills %}
-                                        <div class="info-item mb-2">
+                                        <div class="info-row">
                                             <i class="fas fa-code text-success me-2"></i>
-                                            <span>{{ user.skills }}</span>
-                                        </div>
-                                        {% endif %}
-                                        {% if user.role %}
-                                        <div class="info-item">
-                                            <i class="fas fa-user-tag text-info me-2"></i>
-                                            <span>{{ user.role | title }}</span>
+                                            <span class="small">{{ user.skills }}</span>
                                         </div>
                                         {% endif %}
                                     </div>
 
-                                    <div class="mt-3">
-                                        <button class="btn btn-outline-primary btn-sm me-2">
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary btn-sm me-2 rounded-pill px-3">
                                             <i class="fas fa-envelope me-1"></i>Message
                                         </button>
-                                        <button class="btn btn-outline-success btn-sm">
+                                        <button class="btn btn-outline-success btn-sm rounded-pill px-3">
                                             <i class="fas fa-user-plus me-1"></i>Connect
                                         </button>
                                     </div>
@@ -93,6 +104,37 @@
                         </div>
                         {% endfor %}
                     </div>
+
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                    <nav aria-label="Search results pagination" class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            {% if page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('search', page=page-1) }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% set start_page = [1, page-2]|max %}
+                            {% set end_page = [total_pages+1, page+3]|min %}
+                            {% for page_num in range(start_page, end_page) %}
+                            <li class="page-item {{ 'active' if page_num == page else '' }}">
+                                <a class="page-link" href="{{ url_for('search', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                            {% endfor %}
+
+                            {% if page < total_pages %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('search', page=page+1) }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="text-center py-5">
@@ -118,35 +160,141 @@
     border: 2px solid var(--border);
 }
 
+.search-query-badge {
+    font-size: 0.9rem;
+}
+
 .alumni-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
+    background: var(--card-bg);
+    border: 1px solid var(--border) !important;
 }
 
 .alumni-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px var(--shadow-hover) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px var(--shadow-hover) !important;
+    border-color: var(--primary) !important;
 }
 
-.avatar-circle-lg {
-    width: 60px;
-    height: 60px;
+.avatar-container {
+    flex-shrink: 0;
+}
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: var(--gradient-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.info-item {
+.batch-badge {
+    opacity: 0.8;
+}
+
+.role-badge {
+    flex-shrink: 0;
+}
+
+.contact-info {
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+}
+
+.info-row {
     display: flex;
-    align-items: center;
-    font-size: 0.9rem;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
 }
 
-.info-item i {
-    width: 16px;
+.info-row i {
+    width: 14px;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.info-row span {
+    color: var(--text-primary);
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.action-buttons {
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+    margin-top: auto;
+}
+
+.action-buttons .btn {
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Pagination Styles */
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    color: var(--primary);
+    background-color: var(--card-bg);
+    border-color: var(--border);
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.page-link:hover {
+    color: var(--primary);
+    background-color: var(--hover-bg);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.page-item.disabled .page-link {
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border-color: var(--border);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .alumni-card {
+    background: var(--card-bg);
+    border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .contact-info,
+[data-theme="dark"] .action-buttons {
+    border-color: var(--border) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .avatar-circle {
+        width: 45px;
+        height: 45px;
+        font-size: 1rem;
+    }
+
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
 }
 </style>
 {% endblock %}
