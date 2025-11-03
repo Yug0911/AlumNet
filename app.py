@@ -196,7 +196,13 @@ def dashboard():
         return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
     posts = Post.query.filter((Post.audience == user.role) | (Post.audience == 'all')).order_by(Post.timestamp.desc()).limit(10).all()
-    return render_template('dashboard.html', user=user, posts=posts)
+
+    # Calculate user stats
+    posts_count = Post.query.filter_by(user_id=user.id).count()
+    connections_count = Message.query.filter_by(sender_id=user.id).count() + Message.query.filter_by(receiver_id=user.id).count()
+    badges_count = Badge.query.filter_by(user_id=user.id).count()
+
+    return render_template('dashboard.html', user=user, posts=posts, posts_count=posts_count, connections_count=connections_count, badges_count=badges_count)
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():

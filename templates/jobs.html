@@ -3,47 +3,204 @@
 {% block title %}Job Board - Alumni Platform{% endblock %}
 
 {% block content %}
-<h1>Job Board</h1>
+<div class="jobs-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-briefcase me-3 text-primary"></i>Job Board
+            </h1>
+            <p class="lead text-muted">Discover career opportunities and connect with employers</p>
+        </div>
 
-<div class="row">
-    {% if user.role != 'student' %}
-    <div class="col-md-6">
-        <h2>Post a Job</h2>
-        <form method="POST" class="card p-3">
-            <div class="mb-3">
-                <label for="title" class="form-label">Title:</label>
-                <input type="text" id="title" name="title" class="form-control" required>
+        <div class="row">
+            {% if user.role != 'student' %}
+            <div class="col-lg-5 mb-4">
+                <!-- Post Job Card -->
+                <div class="card shadow-lg rounded-xl h-100">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>Post a Job
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST">
+                            <div class="mb-4">
+                                <label for="title" class="form-label fw-semibold">
+                                    <i class="fas fa-tag me-2"></i>Job Title
+                                </label>
+                                <input type="text" id="title" name="title" class="form-control form-control-lg"
+                                       placeholder="e.g., Software Engineer, Marketing Manager" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="description" class="form-label fw-semibold">
+                                    <i class="fas fa-file-alt me-2"></i>Job Description
+                                </label>
+                                <textarea id="description" name="description" class="form-control form-control-lg"
+                                          placeholder="Describe the role, requirements, and responsibilities..." required rows="4"
+                                          style="resize: vertical; min-height: 120px;"></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="job_type" class="form-label fw-semibold">
+                                    <i class="fas fa-briefcase me-2"></i>Job Type
+                                </label>
+                                <select id="job_type" name="job_type" class="form-select form-select-lg" required>
+                                    <option value="">Select job type</option>
+                                    <option value="internship">🎓 Internship</option>
+                                    <option value="job">💼 Full-time Job</option>
+                                    <option value="part-time">⏰ Part-time</option>
+                                    <option value="contract">📄 Contract</option>
+                                    <option value="freelance">💻 Freelance</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="location" class="form-label fw-semibold">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Location (Optional)
+                                </label>
+                                <input type="text" id="location" name="location" class="form-control form-control-lg"
+                                       placeholder="City, State/Country or Remote">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-paper-plane me-2"></i>Post Job
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
+            {% endif %}
 
-            <div class="mb-3">
-                <label for="description" class="form-label">Description:</label>
-                <textarea id="description" name="description" class="form-control" required rows="3"></textarea>
-            </div>
+            <div class="{% if user.role != 'student' %}col-lg-7{% else %}col-12{% endif %}">
+                <!-- Available Jobs -->
+                <div class="card shadow-lg rounded-xl">
+                    <div class="card-header bg-gradient-accent text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Available Opportunities
+                        </h4>
+                        <span class="badge bg-light text-dark">{{ jobs|length if jobs else 0 }}</span>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if jobs %}
+                        <div class="jobs-list">
+                            {% for job in jobs %}
+                            <div class="job-item p-4 border-bottom">
+                                <div class="d-flex align-items-start">
+                                    <div class="job-icon me-3">
+                                        {% if job.job_type == 'internship' %}
+                                            <i class="fas fa-graduation-cap text-success"></i>
+                                        {% elif job.job_type == 'job' %}
+                                            <i class="fas fa-briefcase text-primary"></i>
+                                        {% elif job.job_type == 'part-time' %}
+                                            <i class="fas fa-clock text-warning"></i>
+                                        {% elif job.job_type == 'contract' %}
+                                            <i class="fas fa-file-contract text-info"></i>
+                                        {% else %}
+                                            <i class="fas fa-laptop text-secondary"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h5 class="mb-1 fw-bold">{{ job.title }}</h5>
+                                                <div class="job-meta text-muted small mb-2">
+                                                    <span class="badge bg-light text-dark me-2">{{ job.job_type | title }}</span>
+                                                    {% if job.location %}
+                                                    <i class="fas fa-map-marker-alt me-1"></i>{{ job.location }}
+                                                    {% else %}
+                                                    <i class="fas fa-globe me-1"></i>Remote
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar me-1"></i>{{ job.created_at }}
+                                            </small>
+                                        </div>
 
-            <div class="mb-3">
-                <label for="job_type" class="form-label">Type:</label>
-                <select id="job_type" name="job_type" class="form-select" required>
-                    <option value="internship">Internship</option>
-                    <option value="job">Job</option>
-                </select>
-            </div>
+                                        <p class="job-description mb-3">{{ job.description | truncate(150) }}</p>
 
-            <button type="submit" class="btn btn-primary">Post Job</button>
-        </form>
-    </div>
-    {% endif %}
-    <div class="col-md-6">
-        <h2>Available Jobs</h2>
-        {% for job in jobs %}
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">{{ job.title }}</h5>
-                <p class="card-text">{{ job.description }}</p>
-                <p class="card-text"><strong>Type:</strong> {{ job.job_type }}</p>
-                <small class="text-muted">Posted by {{ job.user.username }} on {{ job.created_at }}</small>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="job-poster">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-user me-1"></i>Posted by {{ job.user.username }}
+                                                </small>
+                                            </div>
+                                            <div class="job-actions">
+                                                <button class="btn btn-sm btn-outline-primary me-2">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </button>
+                                                <button class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-paper-plane me-1"></i>Apply Now
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-briefcase fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Jobs Available</h5>
+                            <p class="text-muted mb-0">Check back later for new opportunities or post a job if you're an employer!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
+
+<style>
+.jobs-section {
+    min-height: 80vh;
+}
+
+.card-header {
+    border-bottom: none;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.jobs-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.job-item {
+    transition: background-color 0.2s ease;
+}
+
+.job-item:hover {
+    background-color: var(--surface-hover);
+}
+
+.job-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--surface-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.job-description {
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.job-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.job-item:hover .job-actions {
+    opacity: 1;
+}
+</style>
 {% endblock %}

@@ -3,63 +3,266 @@
 {% block title %}Dashboard - Alumni Platform{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <h1>Welcome, {{ user.username }}!</h1>
-        <p class="text-muted">Role: {{ user.role }}</p>
-
-        <div class="mb-4">
-            <h2>Create Post</h2>
-            <form method="POST" action="{{ url_for('create_post') }}" enctype="multipart/form-data" class="card p-3">
-                <div class="mb-3">
-                    <textarea name="content" class="form-control" placeholder="What's on your mind?" required rows="3"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="media" class="form-label">Upload Image/Video (optional):</label>
-                    <input type="file" name="media" id="media" class="form-control" accept="image/*,video/*">
-                </div>
-                <div class="mb-3">
-                    <label for="audience" class="form-label">Audience:</label>
-                    <select name="audience" id="audience" class="form-select">
-                        <option value="all">All</option>
-                        <option value="students">Students</option>
-                        <option value="alumni">Alumni</option>
-                        <option value="teachers">Teachers</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Post</button>
-            </form>
-        </div>
-
-        <h2>Recent Posts</h2>
-        {% for post in posts %}
-        <div class="card mb-3">
-            <div class="card-body">
-                <p class="card-text">{{ post.content }}</p>
-                {% if post.media_type == 'image' %}
-                <img src="{{ url_for('static', filename='uploads/' + post.media_path) }}" class="img-fluid" alt="Post image">
-                {% elif post.media_type == 'video' %}
-                <video controls class="w-100">
-                    <source src="{{ url_for('static', filename='uploads/' + post.media_path) }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-                {% endif %}
-                <small class="text-muted">By {{ post.user.username }} - {{ post.timestamp }}</small>
+<div class="dashboard-header mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">Welcome back, {{ user.username }}!</h1>
+                <p class="lead text-muted mb-0">
+                    <i class="fas fa-user-tag me-2"></i>{{ user.role | title }}
+                </p>
             </div>
-        </div>
-        {% endfor %}
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Quick Links</h5>
-                <a href="{{ url_for('search') }}" class="btn btn-outline-primary mb-2 w-100">Search Alumni</a>
-                <a href="{{ url_for('messages') }}" class="btn btn-outline-secondary mb-2 w-100">Messages</a>
-                <a href="{{ url_for('mentorship') }}" class="btn btn-outline-success mb-2 w-100">Mentorship</a>
-                <a href="{{ url_for('jobs') }}" class="btn btn-outline-info mb-2 w-100">Jobs</a>
-                <a href="{{ url_for('events') }}" class="btn btn-outline-warning mb-2 w-100">Events</a>
+            <div class="col-md-4 text-end">
+                <div class="user-stats">
+                    <div class="d-flex justify-content-end gap-4">
+                        <div class="text-center">
+                            <div class="stat-number">{{ posts_count or 0 }}</div>
+                            <div class="stat-label">Posts</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="stat-number">{{ connections_count or 0 }}</div>
+                            <div class="stat-label">Connections</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="stat-number">{{ badges_count or 0 }}</div>
+                            <div class="stat-label">Badges</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Create Post Card -->
+            <div class="card shadow-lg mb-4 rounded-xl">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-edit text-primary me-2"></i>
+                        <h5 class="card-title mb-0">Share an Update</h5>
+                    </div>
+                    <form method="POST" action="{{ url_for('create_post') }}" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <textarea name="content" class="form-control form-control-lg border-0 bg-light"
+                                      placeholder="What's on your mind, {{ user.username }}?" required rows="3"
+                                      style="resize: none;"></textarea>
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="media" class="form-label text-muted mb-2">
+                                        <i class="fas fa-camera me-1"></i>Photo/Video
+                                    </label>
+                                    <input type="file" name="media" id="media" class="form-control"
+                                           accept="image/*,video/*">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="audience" class="form-label text-muted mb-2">
+                                        <i class="fas fa-users me-1"></i>Audience
+                                    </label>
+                                    <select name="audience" id="audience" class="form-select">
+                                        <option value="all">🌐 All</option>
+                                        <option value="students">🎓 Students</option>
+                                        <option value="alumni">👔 Alumni</option>
+                                        <option value="teachers">👨‍🏫 Faculty</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-paper-plane me-1"></i>Post
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recent Posts -->
+            <h4 class="mb-4">
+                <i class="fas fa-stream me-2 text-primary"></i>Recent Activity
+            </h4>
+            {% for post in posts %}
+            <div class="card shadow-lg mb-4 rounded-xl post-card">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="avatar-circle me-3">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 fw-semibold">{{ post.user.username }}</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>{{ post.timestamp }}
+                                    </small>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Share</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-bookmark me-2"></i>Save</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="card-text mb-3">{{ post.content }}</p>
+
+                    {% if post.media_type == 'image' %}
+                    <div class="post-media mb-3">
+                        <img src="{{ url_for('static', filename='uploads/' + post.media_path) }}"
+                             class="img-fluid rounded" alt="Post image">
+                    </div>
+                    {% elif post.media_type == 'video' %}
+                    <div class="post-media mb-3">
+                        <video controls class="w-100 rounded">
+                            <source src="{{ url_for('static', filename='uploads/' + post.media_path) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    {% endif %}
+
+                    <div class="post-actions d-flex justify-content-between align-items-center">
+                        <div class="d-flex gap-3">
+                            <button class="btn btn-sm btn-outline-primary border-0">
+                                <i class="fas fa-thumbs-up me-1"></i>Like
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary border-0">
+                                <i class="fas fa-comment me-1"></i>Comment
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary border-0">
+                                <i class="fas fa-share me-1"></i>Share
+                            </button>
+                        </div>
+                        <small class="text-muted">{{ post.audience | title }} audience</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Quick Actions Sidebar -->
+            <div class="card shadow-lg mb-4 rounded-xl">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-bolt text-primary me-2"></i>Quick Actions
+                    </h5>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('search') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Find Alumni
+                        </a>
+                        <a href="{{ url_for('messages') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-envelope me-2"></i>Messages
+                        </a>
+                        <a href="{{ url_for('mentorship') }}" class="btn btn-outline-success">
+                            <i class="fas fa-handshake me-2"></i>Mentorship
+                        </a>
+                        <a href="{{ url_for('jobs') }}" class="btn btn-outline-info">
+                            <i class="fas fa-briefcase me-2"></i>Job Board
+                        </a>
+                        <a href="{{ url_for('events') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-calendar-alt me-2"></i>Events
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card shadow-lg rounded-xl">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-clock text-primary me-2"></i>Recent Activity
+                    </h5>
+                    <div class="activity-list">
+                        <div class="activity-item d-flex align-items-center mb-3">
+                            <div class="activity-icon me-3">
+                                <i class="fas fa-user-plus text-success"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">New connection</small>
+                                <div class="fw-semibold">John Doe joined</div>
+                            </div>
+                        </div>
+                        <div class="activity-item d-flex align-items-center mb-3">
+                            <div class="activity-icon me-3">
+                                <i class="fas fa-calendar-check text-info"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Event reminder</small>
+                                <div class="fw-semibold">Alumni Meetup tomorrow</div>
+                            </div>
+                        </div>
+                        <div class="activity-item d-flex align-items-center">
+                            <div class="activity-icon me-3">
+                                <i class="fas fa-medal text-warning"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Achievement</small>
+                                <div class="fw-semibold">Badge earned!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-header {
+    background: linear-gradient(135deg, var(--background) 0%, var(--surface-hover) 100%);
+    padding: 3rem 0;
+    border-radius: 0 0 20px 20px;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-light);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
 {% endblock %}

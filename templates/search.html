@@ -3,29 +3,150 @@
 {% block title %}Search Alumni - Alumni Platform{% endblock %}
 
 {% block content %}
-<h1>Search Alumni</h1>
-<form method="POST" class="mb-4">
-    <div class="input-group">
-        <input type="text" id="query" name="query" class="form-control" required placeholder="e.g., python 2020 developer">
-        <button type="submit" class="btn btn-primary">Search</button>
-    </div>
-</form>
+<div class="search-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="text-center mb-5">
+                    <h1 class="display-5 fw-bold mb-3">
+                        <i class="fas fa-search me-3 text-primary"></i>Find Your Alumni Network
+                    </h1>
+                    <p class="lead text-muted">Connect with alumni based on skills, batch year, or interests</p>
+                </div>
 
-{% if results %}
-<h2>Results</h2>
-<div class="row">
-    {% for user in results %}
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ user.username }}</h5>
-                <p class="card-text">Email: {{ user.email }}</p>
-                <p class="card-text">Batch Year: {{ user.batch_year }}</p>
-                <p class="card-text">Skills: {{ user.skills }}</p>
+                <div class="search-card card shadow-lg rounded-xl mb-5">
+                    <div class="card-body p-4">
+                        <form method="POST">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-8">
+                                    <label for="query" class="form-label fw-semibold">
+                                        <i class="fas fa-search me-2"></i>Search Query
+                                    </label>
+                                    <input type="text" id="query" name="query" class="form-control form-control-lg"
+                                           placeholder="e.g., python developer 2020, marketing specialist, data scientist"
+                                           required>
+                                    <div class="form-text">Search by skills, batch year, or profession</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-search me-2"></i>Search Alumni
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {% if results %}
+                <div class="results-section">
+                    <h2 class="mb-4">
+                        <i class="fas fa-users me-2 text-primary"></i>Search Results
+                        <span class="badge bg-primary ms-2">{{ results|length }}</span>
+                    </h2>
+
+                    <div class="row">
+                        {% for user in results %}
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="card alumni-card shadow-lg rounded-xl h-100">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar-circle-lg me-3">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="card-title mb-1">{{ user.username }}</h5>
+                                            <p class="text-muted small mb-0">
+                                                <i class="fas fa-graduation-cap me-1"></i>Batch {{ user.batch_year }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="alumni-info">
+                                        <div class="info-item mb-2">
+                                            <i class="fas fa-envelope text-primary me-2"></i>
+                                            <span>{{ user.email }}</span>
+                                        </div>
+                                        {% if user.skills %}
+                                        <div class="info-item mb-2">
+                                            <i class="fas fa-code text-success me-2"></i>
+                                            <span>{{ user.skills }}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if user.role %}
+                                        <div class="info-item">
+                                            <i class="fas fa-user-tag text-info me-2"></i>
+                                            <span>{{ user.role | title }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="mt-3">
+                                        <button class="btn btn-outline-primary btn-sm me-2">
+                                            <i class="fas fa-envelope me-1"></i>Message
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-user-plus me-1"></i>Connect
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                    <h3 class="text-muted">No Results Found</h3>
+                    <p class="text-muted">Try adjusting your search terms or browse all alumni</p>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
-    {% endfor %}
 </div>
-{% endif %}
+
+<style>
+.search-section {
+    min-height: 80vh;
+}
+
+.search-card {
+    border: 2px solid var(--border);
+}
+
+.alumni-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.alumni-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px var(--shadow-hover) !important;
+}
+
+.avatar-circle-lg {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.info-item i {
+    width: 16px;
+}
+</style>
 {% endblock %}

@@ -3,33 +3,150 @@
 {% block title %}Messages - Alumni Platform{% endblock %}
 
 {% block content %}
-<h1>Messages</h1>
+<div class="messages-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-5 mb-4">
+                <!-- Send Message Card -->
+                <div class="card shadow-lg rounded-xl h-100">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-paper-plane me-2"></i>Send Message
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST" action="{{ url_for('send_message') }}">
+                            <div class="mb-4">
+                                <label for="receiver_email" class="form-label fw-semibold">
+                                    <i class="fas fa-at me-2"></i>Recipient Email
+                                </label>
+                                <input type="email" id="receiver_email" name="receiver_email"
+                                       class="form-control form-control-lg"
+                                       placeholder="Enter recipient's email address" required>
+                            </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <h2>Send Message</h2>
-        <form method="POST" action="{{ url_for('send_message') }}" class="card p-3">
-            <div class="mb-3">
-                <label for="receiver_email" class="form-label">Receiver Email:</label>
-                <input type="email" id="receiver_email" name="receiver_email" class="form-control" required>
+                            <div class="mb-4">
+                                <label for="content" class="form-label fw-semibold">
+                                    <i class="fas fa-comment-dots me-2"></i>Message
+                                </label>
+                                <textarea name="content" id="content" class="form-control form-control-lg"
+                                          placeholder="Type your message here..." required rows="4"
+                                          style="resize: vertical; min-height: 120px;"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <textarea name="content" class="form-control" placeholder="Message content" required rows="3"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Send</button>
-        </form>
-    </div>
-    <div class="col-md-6">
-        <h2>Inbox</h2>
-        {% for message in messages %}
-        <div class="card mb-3">
-            <div class="card-body">
-                <h6 class="card-title">From: {{ message.sender.username }} ({{ message.sender.email }})</h6>
-                <p class="card-text">{{ message.content }}</p>
-                <small class="text-muted">{{ message.timestamp }}</small>
+
+            <div class="col-lg-7">
+                <!-- Inbox -->
+                <div class="card shadow-lg rounded-xl">
+                    <div class="card-header bg-gradient-accent text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-inbox me-2"></i>Inbox
+                        </h4>
+                        <span class="badge bg-light text-dark">{{ messages|length if messages else 0 }}</span>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if messages %}
+                        <div class="messages-list">
+                            {% for message in messages %}
+                            <div class="message-item p-4 border-bottom">
+                                <div class="d-flex align-items-start">
+                                    <div class="avatar-circle me-3">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h6 class="mb-1 fw-semibold">{{ message.sender.username }}</h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-envelope me-1"></i>{{ message.sender.email }}
+                                                </small>
+                                            </div>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>{{ message.timestamp }}
+                                            </small>
+                                        </div>
+                                        <p class="mb-2 message-content">{{ message.content }}</p>
+                                        <div class="message-actions">
+                                            <button class="btn btn-sm btn-outline-primary me-2">
+                                                <i class="fas fa-reply me-1"></i>Reply
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash me-1"></i>Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Messages Yet</h5>
+                            <p class="text-muted mb-0">Your inbox is empty. Start connecting with alumni!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
+
+<style>
+.messages-section {
+    min-height: 80vh;
+}
+
+.card-header {
+    border-bottom: none;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.messages-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.message-item {
+    transition: background-color 0.2s ease;
+}
+
+.message-item:hover {
+    background-color: var(--surface-hover);
+}
+
+.message-content {
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+.message-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.message-item:hover .message-actions {
+    opacity: 1;
+}
+
+.avatar-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+}
+</style>
 {% endblock %}

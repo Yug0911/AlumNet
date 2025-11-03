@@ -3,60 +3,195 @@
 {% block title %}Events - Alumni Platform{% endblock %}
 
 {% block content %}
-<h1>Events</h1>
+<div class="events-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-calendar-alt me-3 text-primary"></i>Events
+            </h1>
+            <p class="lead text-muted">Connect, learn, and network at upcoming alumni events</p>
+        </div>
 
-<div class="row">
-    {% if user.role != 'student' %}
-    <div class="col-md-6">
-        <h2>Create Event</h2>
-        <form method="POST" class="card p-3">
-            <div class="mb-3">
-                <label for="title" class="form-label">Title:</label>
-                <input type="text" id="title" name="title" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="description" class="form-label">Description:</label>
-                <textarea id="description" name="description" class="form-control" required rows="3"></textarea>
-            </div>
-
-            <div class="mb-3">
-                <label for="date" class="form-label">Date:</label>
-                <input type="datetime-local" id="date" name="date" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="location" class="form-label">Location:</label>
-                <input type="text" id="location" name="location" class="form-control">
-            </div>
-
-            <button type="submit" class="btn btn-primary">Create Event</button>
-        </form>
-    </div>
-    {% endif %}
-    <div class="col-md-6">
-        <h2>Upcoming Events</h2>
-        {% for event in events %}
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">{{ event.title }}</h5>
-                <p class="card-text">{{ event.description }}</p>
-                <p class="card-text"><strong>Date:</strong> {{ event.date }}</p>
-                <p class="card-text"><strong>Location:</strong> {{ event.location or 'Online' }}</p>
-                <small class="text-muted">Organized by {{ event.user.username }}</small>
-                <form method="POST" action="{{ url_for('rsvp', event_id=event.id) }}" class="mt-2">
-                    <div class="input-group">
-                        <select name="status" class="form-select">
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                            <option value="maybe">Maybe</option>
-                        </select>
-                        <button type="submit" class="btn btn-outline-primary">RSVP</button>
+        <div class="row">
+            {% if user.role != 'student' %}
+            <div class="col-lg-5 mb-4">
+                <!-- Create Event Card -->
+                <div class="card shadow-lg rounded-xl h-100">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>Create Event
+                        </h4>
                     </div>
-                </form>
+                    <div class="card-body p-4">
+                        <form method="POST">
+                            <div class="mb-4">
+                                <label for="title" class="form-label fw-semibold">
+                                    <i class="fas fa-tag me-2"></i>Event Title
+                                </label>
+                                <input type="text" id="title" name="title" class="form-control form-control-lg"
+                                       placeholder="e.g., Alumni Reunion 2024, Tech Meetup" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="description" class="form-label fw-semibold">
+                                    <i class="fas fa-file-alt me-2"></i>Event Description
+                                </label>
+                                <textarea id="description" name="description" class="form-control form-control-lg"
+                                          placeholder="Describe the event, agenda, and what attendees can expect..." required rows="4"
+                                          style="resize: vertical; min-height: 120px;"></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="date" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar me-2"></i>Event Date & Time
+                                </label>
+                                <input type="datetime-local" id="date" name="date" class="form-control form-control-lg" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="location" class="form-label fw-semibold">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Location
+                                </label>
+                                <input type="text" id="location" name="location" class="form-control form-control-lg"
+                                       placeholder="Venue address or 'Online' for virtual events">
+                                <div class="form-text">Leave empty for online events</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-calendar-plus me-2"></i>Create Event
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="{% if user.role != 'student' %}col-lg-7{% else %}col-12{% endif %}">
+                <!-- Upcoming Events -->
+                <div class="card shadow-lg rounded-xl">
+                    <div class="card-header bg-gradient-accent text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-calendar-check me-2"></i>Upcoming Events
+                        </h4>
+                        <span class="badge bg-light text-dark">{{ events|length if events else 0 }}</span>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if events %}
+                        <div class="events-list">
+                            {% for event in events %}
+                            <div class="event-item p-4 border-bottom">
+                                <div class="d-flex align-items-start">
+                                    <div class="event-icon me-3">
+                                        <i class="fas fa-calendar-alt text-primary"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h5 class="mb-1 fw-bold">{{ event.title }}</h5>
+                                                <div class="event-meta text-muted small mb-2">
+                                                    <i class="fas fa-clock me-1"></i>{{ event.date }}
+                                                    <span class="mx-2">•</span>
+                                                    {% if event.location %}
+                                                    <i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}
+                                                    {% else %}
+                                                    <i class="fas fa-globe me-1"></i>Online Event
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="event-status">
+                                                <span class="badge bg-success">Upcoming</span>
+                                            </div>
+                                        </div>
+
+                                        <p class="event-description mb-3">{{ event.description | truncate(200) }}</p>
+
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="event-organizer">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-user me-1"></i>Organized by {{ event.user.username }}
+                                                </small>
+                                            </div>
+                                            <div class="event-actions">
+                                                <form method="POST" action="{{ url_for('rsvp', event_id=event.id) }}" class="d-inline">
+                                                    <div class="input-group input-group-sm">
+                                                        <select name="status" class="form-select">
+                                                            <option value="yes">Going</option>
+                                                            <option value="maybe">Maybe</option>
+                                                            <option value="no">Can't Go</option>
+                                                        </select>
+                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                            <i class="fas fa-check me-1"></i>RSVP
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Upcoming Events</h5>
+                            <p class="text-muted mb-0">Stay tuned for exciting alumni events or create one yourself!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
+
+<style>
+.events-section {
+    min-height: 80vh;
+}
+
+.card-header {
+    border-bottom: none;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.events-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.event-item {
+    transition: background-color 0.2s ease;
+}
+
+.event-item:hover {
+    background-color: var(--surface-hover);
+}
+
+.event-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--surface-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.event-description {
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.event-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.event-item:hover .event-actions {
+    opacity: 1;
+}
+</style>
 {% endblock %}
