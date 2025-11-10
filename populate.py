@@ -1,9 +1,25 @@
 import csv
+import time
+import sqlite3
 from app import app, db
 from models import User, Post, Message, Job, Event
 from werkzeug.security import generate_password_hash
 
 def populate_database():
+    def retry_commit(max_retries=5, delay=1):
+        for attempt in range(max_retries):
+            try:
+                db.session.commit()
+                return True
+            except sqlite3.OperationalError as e:
+                if "database is locked" in str(e):
+                    print(f"Database locked, retrying in {delay} seconds... (attempt {attempt + 1}/{max_retries})")
+                    time.sleep(delay)
+                    delay *= 2  # Exponential backoff
+                else:
+                    raise e
+        return False
+
     with app.app_context():
         # Populate alumni from CSV
         with open('alumni_dataset.csv', 'r') as file:
@@ -40,18 +56,21 @@ def populate_database():
                             batch_year=batch_year,
                             skills=skills
                         )
+                        db.session.add(user)
+                        if not retry_commit():
+                            print(f"Failed to commit user {alumni_id} after retries")
                     except KeyboardInterrupt:
                         print("Password hashing interrupted. Skipping user creation.")
                         continue
-                    db.session.add(user)
                 else:
                     # Update existing user's password to alumni_id
                     try:
                         existing_user.password = generate_password_hash(alumni_id)
+                        if not retry_commit():
+                            print(f"Failed to commit password update for user {alumni_id} after retries")
                     except KeyboardInterrupt:
                         print("Password hashing interrupted. Skipping user update.")
                         continue
-        db.session.commit()
 
         # Populate faculty from CSV
         with open('faculty_dataset.csv', 'r') as file:
@@ -81,14 +100,17 @@ def populate_database():
                         print("Password hashing interrupted. Skipping faculty user creation.")
                         continue
                     db.session.add(user)
+                    if not retry_commit():
+                        print(f"Failed to commit faculty user {faculty_id} after retries")
                 else:
                     # Update existing user's password to faculty_id
                     try:
                         existing_user.password = generate_password_hash(faculty_id)
+                        if not retry_commit():
+                            print(f"Failed to commit password update for faculty user {faculty_id} after retries")
                     except KeyboardInterrupt:
                         print("Password hashing interrupted. Skipping faculty user update.")
                         continue
-        db.session.commit()
 
         # Sample posts
         posts = [
@@ -97,7 +119,7 @@ def populate_database():
         ]
         for post in posts:
             db.session.add(post)
-        db.session.commit()
+        retry_commit()
 
         # Sample jobs
         jobs = [
@@ -106,16 +128,16 @@ def populate_database():
         ]
         for job in jobs:
             db.session.add(job)
-        db.session.commit()
+        retry_commit()
 
         # Sample events
         from datetime import datetime
         events = [
-            Event(user_id=1, title='Alumni Meetup', description='Catch up with old friends.', date=datetime(2023, 12, 1, 10, 0), location='Campus'),
+            Event(user_id=1, title='Alumni Meetup', description='Catch up with old friends.', date=datetime(2023, 12, 1, 10, 0), location='Campus', registration_link=None),
         ]
         for event in events:
             db.session.add(event)
-        db.session.commit()
+        retry_commit()
 
     print("Sample data populated!")
 
