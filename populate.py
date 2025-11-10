@@ -3,7 +3,8 @@ from app import app, db
 from models import User, Post, Message, Job, Event
 from werkzeug.security import generate_password_hash
 
-with app.app_context():
+def populate_database():
+    with app.app_context():
     # Populate alumni from CSV
     with open('alumni_dataset.csv', 'r') as file:
         reader = csv.DictReader(file)
@@ -101,3 +102,6 @@ with app.app_context():
     db.session.commit()
 
     print("Sample data populated!")
+
+if __name__ == '__main__':
+    populate_database()
