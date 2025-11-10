@@ -45,13 +45,13 @@
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <h6 class="card-title mb-1 fw-bold">{{ notification.title }}</h6>
                                         <small class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>{{ notification.created_at.strftime('%b %d, %I:%M %p') }} IST
+                                            <i class="fas fa-clock me-1"></i>{{ format_datetime_ist(notification.created_at) }}
                                         </small>
                                     </div>
                                     <p class="card-text mb-3">{{ notification.message }}</p>
-                                    <div class="notification-actions">
+                                    <div class="notification-actions d-flex gap-2 mt-2">
                                         {% if not notification.is_read %}
-                                        <button class="btn btn-sm btn-outline-primary me-2" onclick="markAsRead({{ notification.id }})">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="markAsRead({{ notification.id }})">
                                             <i class="fas fa-check me-1"></i>Mark as Read
                                         </button>
                                         {% endif %}
