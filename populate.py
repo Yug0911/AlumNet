@@ -30,19 +30,27 @@ def populate_database():
                     while User.query.filter_by(username=username).first():
                         username = f"{name}_{counter}"
                         counter += 1
-                    user = User(
-                        username=username,
-                        email=email,
-                        password=generate_password_hash(alumni_id),  # Password set to alumni_id for direct login
-                        role='alumni',
-                        alumni_id=alumni_id,
-                        batch_year=batch_year,
-                        skills=skills
-                    )
+                    try:
+                        user = User(
+                            username=username,
+                            email=email,
+                            password=generate_password_hash(alumni_id),  # Password set to alumni_id for direct login
+                            role='alumni',
+                            alumni_id=alumni_id,
+                            batch_year=batch_year,
+                            skills=skills
+                        )
+                    except KeyboardInterrupt:
+                        print("Password hashing interrupted. Skipping user creation.")
+                        continue
                     db.session.add(user)
                 else:
                     # Update existing user's password to alumni_id
-                    existing_user.password = generate_password_hash(alumni_id)
+                    try:
+                        existing_user.password = generate_password_hash(alumni_id)
+                    except KeyboardInterrupt:
+                        print("Password hashing interrupted. Skipping user update.")
+                        continue
         db.session.commit()
 
         # Populate faculty from CSV
@@ -61,17 +69,25 @@ def populate_database():
                     while User.query.filter_by(username=username).first():
                         username = f"{name}_{counter}"
                         counter += 1
-                    user = User(
-                        username=username,
-                        email=email,
-                        password=generate_password_hash(faculty_id),  # Password set to faculty_id for direct login
-                        role='faculty',
-                        faculty_id=faculty_id
-                    )
+                    try:
+                        user = User(
+                            username=username,
+                            email=email,
+                            password=generate_password_hash(faculty_id),  # Password set to faculty_id for direct login
+                            role='faculty',
+                            faculty_id=faculty_id
+                        )
+                    except KeyboardInterrupt:
+                        print("Password hashing interrupted. Skipping faculty user creation.")
+                        continue
                     db.session.add(user)
                 else:
                     # Update existing user's password to faculty_id
-                    existing_user.password = generate_password_hash(faculty_id)
+                    try:
+                        existing_user.password = generate_password_hash(faculty_id)
+                    except KeyboardInterrupt:
+                        print("Password hashing interrupted. Skipping faculty user update.")
+                        continue
         db.session.commit()
 
         # Sample posts
@@ -104,4 +120,10 @@ def populate_database():
     print("Sample data populated!")
 
 if __name__ == '__main__':
-    populate_database()
+    try:
+        populate_database()
+        print("Database population completed successfully!")
+    except KeyboardInterrupt:
+        print("Database population interrupted. Please try again.")
+    except Exception as e:
+        print(f"Error during database population: {e}")
