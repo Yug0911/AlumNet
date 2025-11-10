@@ -5,22 +5,22 @@ from werkzeug.security import generate_password_hash
 
 def populate_database():
     with app.app_context():
-    # Populate alumni from CSV
-    with open('alumni_dataset.csv', 'r') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            alumni_id = row['AluminiID']
-            name = row['Name']
-            email = row['Email']
-            skills = row['Skills']
-            education = row['Education']
-            # Extract batch year from education, e.g., "CSE (Passing Year 2023)" -> 2023
-            batch_year = None
-            if 'Passing Year' in education:
-                try:
-                    batch_year = int(education.split('Passing Year ')[1].split(')')[0])
-                except:
-                    pass
+        # Populate alumni from CSV
+        with open('alumni_dataset.csv', 'r') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                alumni_id = row['AluminiID']
+                name = row['Name']
+                email = row['Email']
+                skills = row['Skills']
+                education = row['Education']
+                # Extract batch year from education, e.g., "CSE (Passing Year 2023)" -> 2023
+                batch_year = None
+                if 'Passing Year' in education:
+                    try:
+                        batch_year = int(education.split('Passing Year ')[1].split(')')[0])
+                    except:
+                        pass
             # Check if user already exists
             existing_user = User.query.filter_by(alumni_id=alumni_id).first()
             if not existing_user:
