@@ -69,7 +69,7 @@ def send_job_notification(job):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///alumni.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///alumni.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Mail configuration - DISABLED for now (commented out)
