@@ -22,10 +22,16 @@
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}"><i class="fas fa-home me-1"></i>Home</a></li>
                         {% if session.user_id %}
-                            <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}"><i class="fas fa-user me-1"></i>Profile</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('search') }}"><i class="fas fa-search me-1"></i>Search</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('myconnections') }}"><i class="fas fa-users me-1"></i>MyConnections</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('messages') }}"><i class="fas fa-envelope me-1"></i>Messages</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('notifications') }}"><i class="fas fa-bell me-1"></i>Notifications
+                                {% set unread_count = current_user.notifications.filter_by(is_read=False).count() if current_user else 0 %}
+                                {% if unread_count > 0 %}
+                                    <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+                                {% endif %}
+                            </a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('mentorship') }}"><i class="fas fa-handshake me-1"></i>Mentorship</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('jobs') }}"><i class="fas fa-briefcase me-1"></i>Jobs</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('events') }}"><i class="fas fa-calendar-alt me-1"></i>Events</a></li>
@@ -34,11 +40,7 @@
                         {% endif %}
                     </ul>
                     <ul class="navbar-nav ms-auto align-items-center">
-                        <li class="nav-item">
-                            <button class="theme-toggle me-2" id="theme-toggle" aria-label="Toggle theme">
-                                <i class="fas fa-moon"></i>
-                            </button>
-                        </li>
+                        <!-- Theme toggle removed - website now uses dark mode only -->
                         {% if session.user_id %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
@@ -78,32 +80,8 @@
     </footer>
 
     <script>
-        // Theme toggle functionality
-        const themeToggle = document.getElementById('theme-toggle');
-        const html = document.documentElement;
-        const themeIcon = themeToggle.querySelector('i');
-
-        // Check for saved theme preference or default to light mode
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        html.setAttribute('data-theme', currentTheme);
-        updateThemeIcon(currentTheme);
-
-        function updateThemeIcon(theme) {
-            themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        }
-
-        themeToggle.addEventListener('click', () => {
-            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-
-            // Add smooth transition
-            document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-            setTimeout(() => {
-                document.body.style.transition = '';
-            }, 300);
-        });
+        // Set dark theme as default and only theme
+        document.documentElement.setAttribute('data-theme', 'dark');
 
         // Add Font Awesome if not already loaded
         if (!document.querySelector('link[href*="fontawesome"]')) {

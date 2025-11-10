@@ -4,12 +4,13 @@
 
 {% block content %}
 <h1>Leaderboard</h1>
-<table class="table table-striped">
+<table class="table table-striped leaderboard-table">
     <thead>
         <tr>
             <th>Rank</th>
             <th>User</th>
             <th>Score</th>
+            <th>Badge</th>
         </tr>
     </thead>
     <tbody>
@@ -18,6 +19,11 @@
             <td>{{ loop.index }}</td>
             <td>{{ item.user.username }}</td>
             <td>{{ item.score }}</td>
+            <td>
+                {% if item.position_badge %}
+                    🏆 {{ item.position_badge.badge_type }}
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>

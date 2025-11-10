@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Applications for {{ job.title }} - Alumni Platform{% endblock %}
+
+{% block content %}
+<div class="applications-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-lg rounded-xl mb-4">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-1 fw-bold">
+                                    <i class="fas fa-users me-3"></i>Applications for {{ job.title }}
+                                </h2>
+                                <small class="text-white-50">{{ applications|length }} application{{ 's' if applications|length != 1 else '' }}</small>
+                            </div>
+                            <a href="{{ url_for('view_job', job_id=job.id) }}" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Job
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        {% if applications %}
+                        <!-- Send Message to All Applicants -->
+                        <div class="send-message-section mb-4">
+                            <div class="card border rounded-lg">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-envelope me-2 text-primary"></i>Send Message to All Applicants
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" action="{{ url_for('send_message_to_applicants', job_id=job.id) }}">
+                                        <div class="mb-3">
+                                            <label for="message" class="form-label fw-semibold">Message</label>
+                                            <textarea id="message" name="message" class="form-control" rows="3"
+                                                      placeholder="Enter your message to all applicants..." required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane me-2"></i>Send to All Applicants
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Applications List -->
+                        <div class="applications-list">
+                            {% for application in applications %}
+                            <div class="application-item card border rounded-lg mb-3">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-3">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">{{ application.applicant.username }}</h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-envelope me-1"></i>{{ application.applicant.email }}
+                                                </small>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>Applied on {{ application.applied_at.strftime('%B %d, %Y at %I:%M %p') }} IST
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="application-actions">
+                                            <a href="{{ url_for('chat', user_id=application.applicant.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-comment me-1"></i>Message
+                                            </a>
+                                            <a href="{{ url_for('view_profile', user_id=application.applicant.id) }}" class="btn btn-sm btn-outline-secondary ms-2">
+                                                <i class="fas fa-user me-1"></i>View Profile
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Applications Yet</h5>
+                            <p class="text-muted mb-0">Applications will appear here once candidates apply for your job.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.applications-section {
+    min-height: 80vh;
+}
+
+.card-header {
+    border-bottom: none;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.application-item {
+    transition: box-shadow 0.2s ease;
+}
+
+.application-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.send-message-section .card {
+    border-color: var(--border) !important;
+    background: var(--surface-hover);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .send-message-section .card {
+    background: var(--card-bg);
+    border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .application-item {
+    background: var(--card-bg);
+    border-color: var(--border) !important;
+}
+</style>
+{% endblock %}

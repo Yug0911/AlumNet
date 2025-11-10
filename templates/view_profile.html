@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }}'s Profile - Alumni Platform{% endblock %}
+
+{% block content %}
+<div class="profile-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="profile-card card shadow-lg rounded-xl mb-5">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="avatar-container me-4">
+                                <div class="avatar-circle">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h2 class="card-title mb-2 fw-bold">{{ user.username }}</h2>
+                                <div class="role-badge mb-3">
+                                    <span class="badge bg-{{ 'primary' if user.role == 'alumni' else 'secondary' if user.role == 'faculty' else 'info' }} rounded-pill px-3 py-2">
+                                        {{ user.role | title }}
+                                    </span>
+                                </div>
+                                {% if user.batch_year %}
+                                <div class="batch-info mb-2">
+                                    <i class="fas fa-graduation-cap me-2 text-primary"></i>
+                                    <span>Batch {{ user.batch_year }}</span>
+                                </div>
+                                {% endif %}
+                                {% if mutual_count > 0 %}
+                                <div class="mutual-info mb-2">
+                                    <i class="fas fa-users me-2 text-info"></i>
+                                    <span>{{ mutual_count }} mutual connection{{ 's' if mutual_count != 1 else '' }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="profile-details">
+                            <div class="detail-row mb-3">
+                                <i class="fas fa-envelope text-primary me-3"></i>
+                                <span class="fw-semibold">Email:</span>
+                                <span>{{ user.email }}</span>
+                            </div>
+                            {% if user.skills %}
+                            <div class="detail-row mb-3">
+                                <i class="fas fa-code text-success me-3"></i>
+                                <span class="fw-semibold">Skills:</span>
+                                <span>{{ user.skills }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="detail-row">
+                                <i class="fas fa-calendar text-info me-3"></i>
+                                <span class="fw-semibold">Joined:</span>
+                                <span>{{ user.created_at.strftime('%B %Y') }} IST</span>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons mt-4 pt-4 border-top">
+                            {% if is_connected %}
+                            <button class="btn btn-success btn-lg rounded-pill px-4" disabled>
+                                <i class="fas fa-check me-2"></i>Already Connected
+                            </button>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('send_connection_request') }}" class="d-inline">
+                                <input type="hidden" name="receiver_id" value="{{ user.id }}">
+                                <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4">
+                                    <i class="fas fa-user-plus me-2"></i>Connect
+                                </button>
+                            </form>
+                            {% endif %}
+                            <button class="btn btn-outline-secondary btn-lg rounded-pill px-4 ms-3" onclick="sendMessage('{{ user.email }}')">
+                                <i class="fas fa-envelope me-2"></i>Message
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User's Posts Section -->
+                {% if posts %}
+                <div class="posts-section mt-5">
+                    <h3 class="mb-4 text-center">
+                        <i class="fas fa-newspaper me-2 text-primary"></i>{{ user.username }}'s Posts
+                    </h3>
+                    <div class="row g-4">
+                        {% for post in posts %}
+                        <div class="col-lg-6">
+                            <div class="post-card card shadow-sm rounded-lg h-100 border-0">
+                                <div class="card-body p-4">
+                                    <div class="post-header d-flex align-items-center mb-3">
+                                        <div class="avatar-circle-small me-3">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 fw-bold text-white">{{ user.username }}</h6>
+                                            <small class="text-white">
+                                                <i class="fas fa-clock me-1"></i>{{ post.timestamp.strftime('%B %d, %Y at %I:%M %p') }} IST
+                                            </small>
+                                        </div>
+                                        <div class="post-audience">
+                                            <span class="badge bg-{{ 'primary' if post.audience == 'alumni' else 'secondary' if post.audience == 'faculty' else 'info' }} rounded-pill px-2 py-1">
+                                                {{ post.audience | title }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="post-content mb-3">
+                                        <p class="mb-0">{{ post.content }}</p>
+                                    </div>
+
+                                    {% if post.media_type %}
+                                    <div class="post-media mb-3">
+                                        {% if post.media_type == 'image' %}
+                                        <img src="{{ url_for('static', filename='uploads/' + post.media_path) }}"
+                                             class="img-fluid rounded" alt="Post media">
+                                        {% elif post.media_type == 'video' %}
+                                        <video class="w-100 rounded" controls>
+                                            <source src="{{ url_for('static', filename='uploads/' + post.media_path) }}" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center mt-5">
+                    <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">{{ user.username }} hasn't posted anything yet</h5>
+                    <p class="text-muted">Check back later for updates!</p>
+                </div>
+                {% endif %}
+
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('search') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Search
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-section {
+    min-height: 80vh;
+}
+
+.profile-card {
+    border: 2px solid var(--border);
+    background: var(--card-bg);
+}
+
+.avatar-container {
+    flex-shrink: 0;
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.role-badge {
+    font-size: 0.9rem;
+}
+
+.batch-info {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.mutual-info {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.mutual-info i {
+    color: #17a2b8 !important;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.detail-row i {
+    width: 20px;
+    flex-shrink: 0;
+}
+
+.detail-row span:first-of-type {
+    min-width: 80px;
+    margin-right: 1rem;
+}
+
+.action-buttons .btn {
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Posts section styles */
+.posts-section {
+    margin-top: 3rem;
+}
+
+.post-card {
+    transition: all 0.3s ease;
+    background: var(--card-bg);
+    border: 1px solid var(--border) !important;
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--shadow-hover) !important;
+    border-color: var(--primary) !important;
+}
+
+.avatar-circle-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.post-header {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.post-content {
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.post-media img,
+.post-media video {
+    max-height: 300px;
+    object-fit: cover;
+}
+
+/* Dark mode adjustments for posts */
+[data-theme="dark"] .post-card {
+    background: var(--card-bg);
+    border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .post-content {
+    color: var(--text-primary);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .profile-card {
+    background: var(--card-bg);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .detail-row {
+    color: var(--text-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .avatar-circle {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .action-buttons {
+        text-align: center;
+    }
+
+    .action-buttons .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+
+<script>
+function sendMessage(email) {
+    // Redirect to messages page with recipient pre-filled
+    window.location.href = '{{ url_for("messages") }}?recipient=' + encodeURIComponent(email);
+}
+</script>
+{% endblock %}

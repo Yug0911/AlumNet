@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}My Connections - Alumni Platform{% endblock %}
+
+{% block content %}
+<div class="connections-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="text-center mb-5">
+                    <h1 class="display-5 fw-bold mb-3">
+                        <i class="fas fa-users me-3 text-primary"></i>My Connections
+                    </h1>
+                    <p class="lead text-muted">Manage your professional network and connection requests</p>
+                </div>
+
+                <!-- Connection Requests Section -->
+                <div class="card shadow-lg rounded-xl mb-5">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-plus me-2"></i>Connection Requests
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if connection_requests %}
+                        <div class="row g-4">
+                            {% for request in connection_requests %}
+                            <div class="col-xl-6 col-lg-12 mb-4">
+                                <div class="card connection-request-card shadow-sm rounded-lg h-100 border-0">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-start mb-3">
+                                            <div class="avatar-container me-3">
+                                                <div class="avatar-circle">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="card-title mb-1 fw-bold">
+                                                    <a href="{{ url_for('view_profile', user_id=request.sender.id) }}" class="text-decoration-none text-white">{{ request.sender.username }}</a>
+                                                </h6>
+                                                <div class="batch-badge mb-2">
+                                                    <i class="fas fa-graduation-cap me-1 text-primary"></i>
+                                                    <small class="text-muted">Batch {{ request.sender.batch_year or 'N/A' }}</small>
+                                                </div>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock me-1"></i>Requested on {{ request.created_at.strftime('%B %d, %Y') }} IST
+                                                </small>
+                                            </div>
+                                            <div class="role-badge">
+                                                <span class="badge bg-{{ 'primary' if request.sender.role == 'alumni' else 'secondary' if request.sender.role == 'faculty' else 'info' }} rounded-pill px-2 py-1">
+                                                    {{ request.sender.role | title }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="contact-info mb-3">
+                                            <div class="info-row mb-2">
+                                                <i class="fas fa-envelope text-primary me-2"></i>
+                                                <span class="small">{{ request.sender.email }}</span>
+                                            </div>
+                                            {% if request.sender.skills %}
+                                            <div class="info-row">
+                                                <i class="fas fa-code text-success me-2"></i>
+                                                <span class="small">{{ request.sender.skills }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="action-buttons">
+                                            <form method="POST" action="{{ url_for('respond_connection', request_id=request.id) }}" class="d-inline">
+                                                <input type="hidden" name="action" value="accept">
+                                                <button type="submit" class="btn btn-success btn-sm me-2 rounded-pill px-3">
+                                                    <i class="fas fa-check me-1"></i>Accept
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('respond_connection', request_id=request.id) }}" class="d-inline">
+                                                <input type="hidden" name="action" value="reject">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                                    <i class="fas fa-times me-1"></i>Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Connection Requests</h5>
+                            <p class="text-muted">You don't have any pending connection requests at the moment.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- My Connections Section -->
+                <div class="card shadow-lg rounded-xl">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-friends me-2"></i>My Connections
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if connections %}
+                        <div class="row g-4">
+                            {% for connection in connections %}
+                            <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                <div class="card connection-card shadow-sm rounded-lg h-100 border-0">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex align-items-start mb-3">
+                                            <div class="avatar-container me-3">
+                                                <div class="avatar-circle">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="card-title mb-1 fw-bold">
+                                                    <a href="{{ url_for('view_profile', user_id=(connection.receiver.id if connection.sender_id == session.user_id else connection.sender.id)) }}" class="text-decoration-none text-white">{{ connection.receiver.username if connection.sender_id == session.user_id else connection.sender.username }}</a>
+                                                </h6>
+                                                <div class="batch-badge mb-2">
+                                                    <i class="fas fa-graduation-cap me-1 text-primary"></i>
+                                                    <small class="text-muted">Batch {{ (connection.receiver.batch_year if connection.sender_id == session.user_id else connection.sender.batch_year) or 'N/A' }}</small>
+                                                </div>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar-check me-1"></i>Connected since {{ connection.created_at.strftime('%B %d, %Y') }} IST
+                                                </small>
+                                            </div>
+                                            <div class="role-badge">
+                                                <span class="badge bg-{{ 'primary' if (connection.receiver.role if connection.sender_id == session.user_id else connection.sender.role) == 'alumni' else 'secondary' if (connection.receiver.role if connection.sender_id == session.user_id else connection.sender.role) == 'faculty' else 'info' }} rounded-pill px-2 py-1">
+                                                    {{ (connection.receiver.role if connection.sender_id == session.user_id else connection.sender.role) | title }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="contact-info mb-3">
+                                            <div class="info-row mb-2">
+                                                <i class="fas fa-envelope text-primary me-2"></i>
+                                                <span class="small">{{ connection.receiver.email if connection.sender_id == session.user_id else connection.sender.email }}</span>
+                                            </div>
+                                            {% if (connection.receiver.skills if connection.sender_id == session.user_id else connection.sender.skills) %}
+                                            <div class="info-row">
+                                                <i class="fas fa-code text-success me-2"></i>
+                                                <span class="small">{{ connection.receiver.skills if connection.sender_id == session.user_id else connection.sender.skills }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="action-buttons">
+                                            <button class="btn btn-primary btn-sm me-2 rounded-pill px-3" onclick="sendMessage('{{ connection.receiver.email if connection.sender_id == session.user_id else connection.sender.email }}')">
+                                                <i class="fas fa-envelope me-1"></i>Message
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="removeConnection({{ connection.id }})">
+                                                <i class="fas fa-user-minus me-1"></i>Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Connections Yet</h5>
+                            <p class="text-muted">Start building your network by searching for alumni and sending connection requests.</p>
+                            <a href="{{ url_for('search') }}" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Find Alumni
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function sendMessage(email) {
+    // Redirect to messages page with recipient pre-filled
+    window.location.href = '{{ url_for("messages") }}?recipient=' + encodeURIComponent(email);
+}
+
+function removeConnection(connectionId) {
+    if (confirm('Are you sure you want to remove this connection?')) {
+        // Implement remove connection functionality
+        fetch('/remove_connection/' + connectionId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error removing connection');
+            }
+        });
+    }
+}
+</script>
+
+<style>
+.connections-section {
+    min-height: 80vh;
+}
+
+.connection-request-card,
+.connection-card {
+    transition: all 0.3s ease;
+    background: var(--card-bg);
+    border: 1px solid var(--border) !important;
+}
+
+.connection-request-card:hover,
+.connection-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px var(--shadow-hover) !important;
+    border-color: var(--primary) !important;
+}
+
+.avatar-container {
+    flex-shrink: 0;
+}
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.batch-badge {
+    opacity: 0.8;
+}
+
+.role-badge {
+    flex-shrink: 0;
+}
+
+.contact-info {
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+}
+
+.info-row {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.info-row i {
+    width: 14px;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.info-row span {
+    color: var(--text-primary);
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.action-buttons {
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+    margin-top: auto;
+}
+
+.action-buttons .btn {
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .connection-request-card,
+[data-theme="dark"] .connection-card {
+    background: var(--card-bg);
+    border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .contact-info,
+[data-theme="dark"] .action-buttons {
+    border-color: var(--border) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .avatar-circle {
+        width: 45px;
+        height: 45px;
+        font-size: 1rem;
+    }
+
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+</style>
+{% endblock %}

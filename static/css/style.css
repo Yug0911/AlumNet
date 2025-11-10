@@ -561,3 +561,8 @@ h5.fw-bold,
 .event-title {
     color: var(--text-primary) !important;
 }
+
+/* Leaderboard Table Styling */
+.leaderboard-table th {
+    color: black !important;
+}

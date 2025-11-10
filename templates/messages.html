@@ -15,14 +15,15 @@
                         </h4>
                     </div>
                     <div class="card-body p-4">
-                        <form method="POST" action="{{ url_for('send_message') }}">
+                        <form method="POST" action="{{ url_for('send_message') }}" enctype="multipart/form-data">
                             <div class="mb-4">
                                 <label for="receiver_email" class="form-label fw-semibold">
                                     <i class="fas fa-at me-2"></i>Recipient Email
                                 </label>
                                 <input type="email" id="receiver_email" name="receiver_email"
                                        class="form-control form-control-lg"
-                                       placeholder="Enter recipient's email address" required>
+                                       placeholder="Enter recipient's email address"
+                                       value="{{ request.args.get('recipient', '') }}" required>
                             </div>
 
                             <div class="mb-4">
@@ -30,8 +31,17 @@
                                     <i class="fas fa-comment-dots me-2"></i>Message
                                 </label>
                                 <textarea name="content" id="content" class="form-control form-control-lg"
-                                          placeholder="Type your message here..." required rows="4"
+                                          placeholder="Type your message here..." rows="4"
                                           style="resize: vertical; min-height: 120px;"></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="media" class="form-label fw-semibold">
+                                    <i class="fas fa-paperclip me-2"></i>Attach Media (Optional)
+                                </label>
+                                <input type="file" name="media" id="media" class="form-control form-control-lg"
+                                       accept="image/*,video/*">
+                                <small class="text-muted">Supported formats: Images (PNG, JPG, GIF) and Videos (MP4, AVI, MOV)</small>
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-lg w-100">
@@ -43,54 +53,60 @@
             </div>
 
             <div class="col-lg-7">
-                <!-- Inbox -->
+                <!-- Conversations -->
                 <div class="card shadow-lg rounded-xl">
                     <div class="card-header bg-gradient-accent text-white d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">
-                            <i class="fas fa-inbox me-2"></i>Inbox
+                            <i class="fas fa-comments me-2"></i>Conversations
                         </h4>
-                        <span class="badge bg-light text-dark">{{ messages|length if messages else 0 }}</span>
+                        <span class="badge bg-light text-dark">{{ conversations|length if conversations else 0 }}</span>
                     </div>
                     <div class="card-body p-0">
-                        {% if messages %}
-                        <div class="messages-list">
-                            {% for message in messages %}
-                            <div class="message-item p-4 border-bottom">
-                                <div class="d-flex align-items-start">
-                                    <div class="avatar-circle me-3">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div>
-                                                <h6 class="mb-1 fw-semibold">{{ message.sender.username }}</h6>
-                                                <small class="text-muted">
-                                                    <i class="fas fa-envelope me-1"></i>{{ message.sender.email }}
-                                                </small>
-                                            </div>
-                                            <small class="text-muted">
-                                                <i class="fas fa-clock me-1"></i>{{ message.timestamp }}
-                                            </small>
+                        {% if conversations %}
+                        <div class="conversations-list">
+                            {% for conversation in conversations %}
+                            <a href="{{ url_for('chat', user_id=conversation.user.id) }}" class="text-decoration-none">
+                                <div class="conversation-item p-4 border-bottom">
+                                    <div class="d-flex align-items-start">
+                                        <div class="avatar-circle me-3">
+                                            <i class="fas fa-user"></i>
                                         </div>
-                                        <p class="mb-2 message-content">{{ message.content }}</p>
-                                        <div class="message-actions">
-                                            <button class="btn btn-sm btn-outline-primary me-2">
-                                                <i class="fas fa-reply me-1"></i>Reply
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash me-1"></i>Delete
-                                            </button>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h6 class="mb-1 fw-semibold text-dark">{{ conversation.user.username }}</h6>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-envelope me-1"></i>{{ conversation.user.email }}
+                                                    </small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock me-1"></i>{{ conversation.latest_message.timestamp.strftime('%b %d') }} IST
+                                                    </small>
+                                                    {% if conversation.unread_count > 0 %}
+                                                    <div class="unread-badge mt-1">
+                                                        <span class="badge bg-primary rounded-pill">{{ conversation.unread_count }}</span>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <p class="mb-0 conversation-preview text-muted">
+                                                {% if conversation.latest_message.sender_id == session['user_id'] %}
+                                                    <strong>You:</strong>
+                                                {% endif %}
+                                                {{ conversation.latest_message.content | truncate(50) }}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                             {% endfor %}
                         </div>
                         {% else %}
                         <div class="text-center py-5">
-                            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
-                            <h5 class="text-muted">No Messages Yet</h5>
-                            <p class="text-muted mb-0">Your inbox is empty. Start connecting with alumni!</p>
+                            <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Conversations Yet</h5>
+                            <p class="text-muted mb-0">Start chatting with alumni by clicking their message buttons!</p>
                         </div>
                         {% endif %}
                     </div>

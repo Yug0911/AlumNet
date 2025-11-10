@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title }} - Job Details - Alumni Platform{% endblock %}
+
+{% block content %}
+<div class="job-detail-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="job-detail-card card shadow-lg rounded-xl mb-4">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <div class="d-flex align-items-center">
+                            <div class="job-icon-large me-3">
+                                {% if job.job_type == 'internship' %}
+                                    <i class="fas fa-graduation-cap"></i>
+                                {% elif job.job_type == 'job' %}
+                                    <i class="fas fa-briefcase"></i>
+                                {% elif job.job_type == 'part-time' %}
+                                    <i class="fas fa-clock"></i>
+                                {% elif job.job_type == 'contract' %}
+                                    <i class="fas fa-file-contract"></i>
+                                {% else %}
+                                    <i class="fas fa-laptop"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h2 class="mb-1 fw-bold">{{ job.title }}</h2>
+                                <div class="job-meta">
+                                    <span class="badge bg-light text-dark me-2">{{ job.job_type | title }}</span>
+                                    {% if job.location %}
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ job.location }}
+                                    {% else %}
+                                    <i class="fas fa-globe me-1"></i>Remote
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="job-description-section mb-4">
+                                    <h4 class="mb-3">
+                                        <i class="fas fa-file-alt me-2 text-primary"></i>Job Description
+                                    </h4>
+                                    <div class="job-description">
+                                        {{ job.description | safe }}
+                                    </div>
+                                </div>
+
+                                <div class="job-details-section">
+                                    <h4 class="mb-3">
+                                        <i class="fas fa-info-circle me-2 text-primary"></i>Job Details
+                                    </h4>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <i class="fas fa-briefcase text-primary me-2"></i>
+                                                <strong>Type:</strong> {{ job.job_type | title }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <i class="fas fa-calendar text-primary me-2"></i>
+                                                <strong>Posted:</strong> {{ job.created_at.strftime('%B %d, %Y') }} IST
+                                            </div>
+                                        </div>
+                                        {% if job.location %}
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                                <strong>Location:</strong> {{ job.location }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="job-sidebar">
+                                    <div class="poster-info card border rounded-lg p-3 mb-4">
+                                        <h5 class="mb-3 text-white">
+                                            <i class="fas fa-user me-2 text-white"></i>Posted By
+                                        </h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle-small me-3">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1 text-white">{{ job.user.username }}</h6>
+                                                <small class="text-white">{{ job.user.role | title }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="action-buttons">
+                                        {% if is_poster %}
+                                        <a href="{{ url_for('view_applications', job_id=job.id) }}" class="btn btn-primary btn-lg w-100 mb-3">
+                                            <i class="fas fa-users me-2"></i>View Applications
+                                        </a>
+                                        {% elif has_applied %}
+                                        <button class="btn btn-success btn-lg w-100 mb-3" disabled>
+                                            <i class="fas fa-check me-2"></i>Already Applied
+                                        </button>
+                                        {% else %}
+                                        <form method="POST" action="{{ url_for('apply_job', job_id=job.id) }}">
+                                            <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                                                <i class="fas fa-paper-plane me-2"></i>Apply Now
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        <button class="btn btn-outline-secondary btn-lg w-100" onclick="shareJob()">
+                                            <i class="fas fa-share me-2"></i>Share Job
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <a href="{{ url_for('jobs') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Job Board
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.job-detail-section {
+    min-height: 80vh;
+}
+
+.job-detail-card {
+    border: 2px solid var(--border);
+    background: var(--card-bg);
+}
+
+.card-header {
+    border-bottom: none;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.job-icon-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.job-meta {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.job-description-section h4,
+.job-details-section h4 {
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 0.5rem;
+}
+
+.job-description {
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 1rem;
+    white-space: pre-line;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--surface-hover);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.detail-item strong {
+    color: var(--text-primary);
+}
+
+.job-sidebar {
+    position: sticky;
+    top: 20px;
+}
+
+.poster-info {
+    background: var(--surface-hover);
+    border-color: var(--border) !important;
+}
+
+.avatar-circle-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.action-buttons .btn {
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .job-detail-card,
+[data-theme="dark"] .poster-info {
+    background: var(--card-bg);
+    border-color: var(--border) !important;
+}
+
+[data-theme="dark"] .job-description,
+[data-theme="dark"] .detail-item {
+    color: var(--text-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .job-sidebar {
+        position: static;
+        margin-top: 2rem;
+    }
+
+    .action-buttons .btn {
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+
+<script>
+function applyForJob() {
+    // For now, just show an alert. In a real application, this would open an application form or send an email
+    alert('Application feature coming soon! Contact the job poster directly.');
+}
+
+function shareJob() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ job.title }}',
+            text: 'Check out this job opportunity: {{ job.title }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy URL to clipboard
+        navigator.clipboard.writeText(window.location.href).then(function() {
+            alert('Job link copied to clipboard!');
+        });
+    }
+}
+</script>
+{% endblock %}

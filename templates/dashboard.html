@@ -97,9 +97,11 @@
                         <div class="flex-grow-1">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h6 class="mb-1 fw-semibold">{{ post.user.username }}</h6>
+                                    <h6 class="mb-1 fw-semibold">
+                                        <a href="{{ url_for('view_profile', user_id=post.user.id) }}" class="text-decoration-none text-white">{{ post.user.username }}</a>
+                                    </h6>
                                     <small class="text-muted">
-                                        <i class="fas fa-clock me-1"></i>{{ post.timestamp }}
+                                        <i class="fas fa-clock me-1"></i>{{ format_datetime_ist(post.timestamp) }} IST
                                     </small>
                                 </div>
                                 <div class="dropdown">
@@ -131,12 +133,20 @@
                     </div>
                     {% endif %}
 
+                    <div class="post-stats mb-2">
+                        <small class="text-muted">
+                            <span class="like-count">{{ post.likes|length if post.likes else 0 }}</span> likes •
+                            <span class="comment-count">{{ post.comments|length if post.comments else 0 }}</span> comments
+                        </small>
+                    </div>
+
                     <div class="post-actions d-flex justify-content-between align-items-center">
                         <div class="d-flex gap-3">
-                            <button class="btn btn-sm btn-outline-primary border-0">
-                                <i class="fas fa-thumbs-up me-1"></i>Like
+                            <button class="btn btn-sm btn-outline-primary border-0 like-btn" data-post-id="{{ post.id }}">
+                                <i class="fas fa-thumbs-up me-1"></i>
+                                <span class="like-text">Like</span>
                             </button>
-                            <button class="btn btn-sm btn-outline-secondary border-0">
+                            <button class="btn btn-sm btn-outline-secondary border-0 comment-toggle-btn" data-post-id="{{ post.id }}">
                                 <i class="fas fa-comment me-1"></i>Comment
                             </button>
                             <button class="btn btn-sm btn-outline-secondary border-0">
@@ -145,12 +155,76 @@
                         </div>
                         <small class="text-muted">{{ post.audience | title }} audience</small>
                     </div>
+
+                    <!-- Comments Section -->
+                    <div class="comments-section mt-3" id="comments-{{ post.id }}" style="display: none;">
+                        <div class="comments-list mb-3" id="comments-list-{{ post.id }}">
+                            <!-- Comments will be loaded here -->
+                        </div>
+                        <div class="comment-form">
+                            <form class="add-comment-form" data-post-id="{{ post.id }}">
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Write a comment..." name="content" required>
+                                    <button class="btn btn-primary btn-sm" type="submit">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
 
         <div class="col-lg-4">
+            <!-- Recent Notifications -->
+            {% if recent_notifications %}
+            <div class="card shadow-lg mb-4 rounded-xl">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bell text-primary me-2"></i>Recent Notifications
+                        </h5>
+                        <a href="{{ url_for('notifications') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="notifications-preview">
+                        {% for notification in recent_notifications %}
+                        <div class="notification-item-preview mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-start">
+                                <div class="notification-icon-small me-2">
+                                    {% if notification.type == 'message' %}
+                                        <i class="fas fa-envelope text-primary"></i>
+                                    {% elif notification.type == 'connection_request' %}
+                                        <i class="fas fa-user-plus text-success"></i>
+                                    {% elif notification.type == 'connection_accepted' %}
+                                        <i class="fas fa-user-check text-success"></i>
+                                    {% elif notification.type == 'connection_rejected' %}
+                                        <i class="fas fa-user-times text-danger"></i>
+                                    {% elif notification.type == 'job_application' %}
+                                        <i class="fas fa-briefcase text-info"></i>
+                                    {% elif notification.type == 'event_rsvp' %}
+                                        <i class="fas fa-calendar-check text-warning"></i>
+                                    {% else %}
+                                        <i class="fas fa-bell text-secondary"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="notification-title-small fw-semibold mb-1">{{ notification.title }}</div>
+                                    <div class="notification-message-small text-muted small">{{ notification.message[:60] }}{% if notification.message|length > 60 %}...{% endif %}</div>
+                                    <small class="text-muted">{{ format_datetime_ist(notification.created_at) }} IST</small>
+                                </div>
+                                {% if not notification.is_read %}
+                                <div class="unread-indicator"></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Quick Actions Sidebar -->
             <div class="card shadow-lg mb-4 rounded-xl">
                 <div class="card-body p-4">
@@ -180,37 +254,47 @@
             <!-- Recent Activity -->
             <div class="card shadow-lg rounded-xl">
                 <div class="card-body p-4">
-                    <h5 class="card-title mb-3">
-                        <i class="fas fa-clock text-primary me-2"></i>Recent Activity
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bell text-primary me-2"></i>Notifications
+                        </h5>
+                        <a href="{{ url_for('notifications') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-bell me-1"></i>View All
+                        </a>
+                    </div>
                     <div class="activity-list">
+                        {% if activities %}
+                        {% for activity in activities %}
                         <div class="activity-item d-flex align-items-center mb-3">
                             <div class="activity-icon me-3">
-                                <i class="fas fa-user-plus text-success"></i>
+                                {% if activity.activity_type == 'post_created' %}
+                                    <i class="fas fa-edit text-primary"></i>
+                                {% elif activity.activity_type == 'job_posted' %}
+                                    <i class="fas fa-briefcase text-info"></i>
+                                {% elif activity.activity_type == 'event_created' %}
+                                    <i class="fas fa-calendar-alt text-warning"></i>
+                                {% elif activity.activity_type == 'connection_sent' %}
+                                    <i class="fas fa-user-plus text-success"></i>
+                                {% elif activity.activity_type == 'message_sent' %}
+                                    <i class="fas fa-envelope text-secondary"></i>
+                                {% elif activity.activity_type == 'job_applied' %}
+                                    <i class="fas fa-paper-plane text-primary"></i>
+                                {% else %}
+                                    <i class="fas fa-circle text-muted"></i>
+                                {% endif %}
                             </div>
-                            <div>
-                                <small class="text-muted">New connection</small>
-                                <div class="fw-semibold">John Doe joined</div>
-                            </div>
-                        </div>
-                        <div class="activity-item d-flex align-items-center mb-3">
-                            <div class="activity-icon me-3">
-                                <i class="fas fa-calendar-check text-info"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Event reminder</small>
-                                <div class="fw-semibold">Alumni Meetup tomorrow</div>
-                            </div>
-                        </div>
-                        <div class="activity-item d-flex align-items-center">
-                            <div class="activity-icon me-3">
-                                <i class="fas fa-medal text-warning"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Achievement</small>
-                                <div class="fw-semibold">Badge earned!</div>
+                            <div class="flex-grow-1">
+                                <small class="text-muted">{{ activity.user.username }}</small>
+                                <div class="fw-semibold">{{ activity.description }}</div>
+                                <small class="text-muted">{{ format_datetime_ist(activity.created_at) }} IST</small>
                             </div>
                         </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center py-3">
+                            <small class="text-muted">No recent activity</small>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -264,5 +348,193 @@
     align-items: center;
     justify-content: center;
 }
+
+.notification-icon-small {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--surface-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.notification-title-small {
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+.notification-message-small {
+    font-size: 0.75rem;
+    line-height: 1.3;
+}
+
+.unread-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+    margin-top: 6px;
+}
+
+.comments-section {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+
+.comment-item {
+    display: flex;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background: var(--surface-hover);
+    border-radius: 8px;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.like-btn.liked {
+    color: var(--primary) !important;
+}
+
+.like-btn.liked i {
+    color: var(--primary) !important;
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle like buttons
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            const likeText = this.querySelector('.like-text');
+
+            fetch(`/like_post/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update like count
+                    const likeCount = this.closest('.post-card').querySelector('.like-count');
+                    likeCount.textContent = data.like_count;
+
+                    // Update button appearance
+                    if (data.liked) {
+                        this.classList.add('liked');
+                        likeText.textContent = 'Liked';
+                    } else {
+                        this.classList.remove('liked');
+                        likeText.textContent = 'Like';
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Handle comment toggle buttons
+    document.querySelectorAll('.comment-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            const commentsSection = document.getElementById(`comments-${postId}`);
+
+            if (commentsSection.style.display === 'none') {
+                commentsSection.style.display = 'block';
+                loadComments(postId);
+            } else {
+                commentsSection.style.display = 'none';
+            }
+        });
+    });
+
+    // Handle comment forms
+    document.querySelectorAll('.add-comment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const postId = this.getAttribute('data-post-id');
+            const formData = new FormData(this);
+            const content = formData.get('content');
+
+            if (!content.trim()) return;
+
+            fetch(`/add_comment/${postId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear form
+                    this.querySelector('input[name="content"]').value = '';
+
+                    // Add comment to list
+                    addCommentToList(postId, data.comment);
+
+                    // Update comment count
+                    const commentCount = document.querySelector(`[data-post-id="${postId}"].comment-toggle-btn`).closest('.post-card').querySelector('.comment-count');
+                    const currentCount = parseInt(commentCount.textContent);
+                    commentCount.textContent = currentCount + 1;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    function loadComments(postId) {
+        fetch(`/get_comments/${postId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const commentsList = document.getElementById(`comments-list-${postId}`);
+                commentsList.innerHTML = '';
+
+                data.comments.forEach(comment => {
+                    addCommentToList(postId, comment);
+                });
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function addCommentToList(postId, comment) {
+        const commentsList = document.getElementById(`comments-list-${postId}`);
+        const commentElement = document.createElement('div');
+        commentElement.className = 'comment-item';
+        commentElement.innerHTML = `
+            <div class="comment-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong class="text-white">${comment.username}</strong>
+                        <p class="mb-1 text-white">${comment.content}</p>
+                    </div>
+                    <small class="text-muted">${comment.created_at} IST</small>
+                </div>
+            </div>
+        `;
+        commentsList.appendChild(commentElement);
+    }
+});
+</script>
 {% endblock %}

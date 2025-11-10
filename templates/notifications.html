@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - Alumni Platform{% endblock %}
+
+{% block content %}
+<div class="notifications-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">
+                        <i class="fas fa-bell me-3 text-primary"></i>Notifications
+                    </h1>
+                    <div class="notification-actions">
+                        <button class="btn btn-outline-primary btn-sm" onclick="markAllAsRead()">
+                            <i class="fas fa-check-double me-1"></i>Mark All Read
+                        </button>
+                    </div>
+                </div>
+
+                {% if notifications %}
+                <div class="notifications-list">
+                    {% for notification in notifications %}
+                    <div class="notification-item card mb-3 {{ 'unread' if not notification.is_read else 'read' }} shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-start">
+                                <div class="notification-icon me-3">
+                                    {% if notification.type == 'message' %}
+                                        <i class="fas fa-envelope text-primary"></i>
+                                    {% elif notification.type == 'connection_request' %}
+                                        <i class="fas fa-user-plus text-success"></i>
+                                    {% elif notification.type == 'connection_accepted' %}
+                                        <i class="fas fa-user-check text-success"></i>
+                                    {% elif notification.type == 'connection_rejected' %}
+                                        <i class="fas fa-user-times text-danger"></i>
+                                    {% elif notification.type == 'job_application' %}
+                                        <i class="fas fa-briefcase text-info"></i>
+                                    {% elif notification.type == 'event_rsvp' %}
+                                        <i class="fas fa-calendar-check text-warning"></i>
+                                    {% else %}
+                                        <i class="fas fa-bell text-secondary"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-1 fw-bold">{{ notification.title }}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>{{ notification.created_at.strftime('%b %d, %I:%M %p') }} IST
+                                        </small>
+                                    </div>
+                                    <p class="card-text mb-3">{{ notification.message }}</p>
+                                    <div class="notification-actions">
+                                        {% if not notification.is_read %}
+                                        <button class="btn btn-sm btn-outline-primary me-2" onclick="markAsRead({{ notification.id }})">
+                                            <i class="fas fa-check me-1"></i>Mark as Read
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification({{ notification.id }})">
+                                            <i class="fas fa-trash me-1"></i>Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                    <h3 class="text-muted">No Notifications Yet</h3>
+                    <p class="text-muted">You'll receive notifications for messages, connection requests, and other activities here.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.notifications-section {
+    min-height: 80vh;
+}
+
+.notification-item {
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.notification-item.unread {
+    border-left: 4px solid var(--primary);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.notification-item.read {
+    opacity: 0.8;
+}
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.notification-actions .btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .notification-item {
+    background: var(--card-bg);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .notification-item.unread {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notification-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+
+    .notification-actions {
+        text-align: center;
+        margin-top: 1rem;
+    }
+}
+</style>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/mark_notification_read/${notificationId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function markAllAsRead() {
+    fetch('/mark_all_notifications_read', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function deleteNotification(notificationId) {
+    if (confirm('Are you sure you want to delete this notification?')) {
+        fetch(`/delete_notification/${notificationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+</script>
+{% endblock %}

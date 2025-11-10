@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}Chat with {{ other_user.username }} - Alumni Platform{% endblock %}
+
+{% block content %}
+<div class="chat-section">
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <!-- Chat Header -->
+            <div class="chat-header bg-white border-bottom d-flex align-items-center px-4 py-3">
+                <a href="{{ url_for('messages') }}" class="btn btn-link text-decoration-none me-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div class="avatar-circle-small me-3">
+                    <i class="fas fa-user text-white"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h5 class="mb-0 text-dark">{{ other_user.username }}</h5>
+                    <small class="text-muted">{{ other_user.role | title }}</small>
+                </div>
+                <div class="chat-actions">
+                    <button class="btn btn-link text-decoration-none" id="attachMediaBtn">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages flex-grow-1 p-4" id="chatMessages">
+                {% for message in messages %}
+                <div class="message-wrapper mb-3 {% if message.sender_id == session['user_id'] %}text-end{% endif %}">
+                    <div class="message-bubble {% if message.sender_id == session['user_id'] %}sent{% else %}received{% endif %}">
+                        {% if message.media_path %}
+                            {% if message.media_type == 'image' %}
+                                <div class="message-media">
+                                    <img src="{{ url_for('static', filename='uploads/' + message.media_path) }}" alt="Shared image" class="img-fluid rounded">
+                                </div>
+                            {% elif message.media_type == 'video' %}
+                                <div class="message-media">
+                                    <video controls class="rounded">
+                                        <source src="{{ url_for('static', filename='uploads/' + message.media_path) }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                        {% if message.content %}
+                            <div class="message-content">{{ message.content }}</div>
+                        {% endif %}
+                        <div class="message-time">{{ message.timestamp.strftime('%H:%M') }} IST</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Chat Input -->
+            <div class="chat-input bg-white border-top p-3">
+                <form id="messageForm" class="d-flex" enctype="multipart/form-data">
+                    <input type="hidden" name="receiver_id" value="{{ other_user.id }}">
+                    <input type="file" id="mediaInput" name="media" accept="image/*,video/*" style="display: none;">
+                    <div class="input-group">
+                        <input type="text" name="content" class="form-control border-0"
+                               placeholder="Type a message..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-section {
+    height: calc(100vh - 76px); /* Adjust for navbar height */
+    background: #f0f2f5;
+}
+
+.chat-header {
+    height: 70px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chat-messages {
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.message-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-bubble {
+    max-width: 70%;
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
+.message-bubble.sent {
+    margin-left: auto;
+}
+
+.message-bubble.received {
+    margin-right: auto;
+}
+
+.message-content {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    word-wrap: break-word;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.message-media {
+    margin-bottom: 8px;
+    max-width: 250px;
+}
+
+.message-media img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.message-media video {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.message-bubble.sent .message-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    position: relative;
+}
+
+.message-bubble.sent .message-content::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: -8px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid #667eea;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+}
+
+.message-bubble.received .message-content {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    position: relative;
+}
+
+.message-bubble.received .message-content::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: -8px;
+    width: 0;
+    height: 0;
+    border-right: 8px solid #f093fb;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+    padding: 0 4px;
+}
+
+.message-bubble.sent .message-time {
+    text-align: right;
+}
+
+.message-bubble.received .message-time {
+    text-align: left;
+}
+
+.chat-input {
+    height: 70px;
+}
+
+.chat-input .form-control {
+    background: #f0f2f5;
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+.chat-input .form-control:focus {
+    background: white;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.chat-input .btn {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-left: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-circle-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.chat-actions .btn {
+    color: #666;
+    padding: 8px;
+}
+
+.chat-actions .btn:hover {
+    color: #007bff;
+}
+
+/* Scrollbar styling */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chat-section {
+        height: calc(100vh - 60px);
+    }
+
+    .chat-header {
+        height: 60px;
+        padding: 0 15px;
+    }
+
+    .chat-input {
+        height: 60px;
+        padding: 10px 15px;
+    }
+
+    .message-bubble {
+        max-width: 85%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageForm = document.getElementById('messageForm');
+    const chatMessages = document.getElementById('chatMessages');
+
+    // Scroll to bottom on page load
+    scrollToBottom();
+
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(messageForm);
+        const content = formData.get('content');
+        const media = formData.get('media');
+
+        // Require either content or media
+        if (!content && !media) {
+            alert('Please enter a message or attach media');
+            return;
+        }
+
+        fetch('/send_chat_message', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add the new message to the chat
+                addMessage(data.message, true);
+                messageForm.reset();
+                scrollToBottom();
+            } else {
+                alert(data.error || 'Failed to send message');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to send message');
+        });
+    });
+
+    function addMessage(messageData, isSent) {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `message-wrapper mb-3 ${isSent ? 'text-end' : ''}`;
+
+        const messageBubble = document.createElement('div');
+        messageBubble.className = `message-bubble ${isSent ? 'sent' : 'received'}`;
+
+        // Add media if present
+        if (messageData.media_path) {
+            const mediaDiv = document.createElement('div');
+            mediaDiv.className = 'message-media';
+
+            if (messageData.media_type === 'image') {
+                const img = document.createElement('img');
+                img.src = `/static/uploads/${messageData.media_path}`;
+                img.alt = 'Shared image';
+                img.className = 'img-fluid rounded';
+                mediaDiv.appendChild(img);
+            } else if (messageData.media_type === 'video') {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.className = 'rounded';
+                const source = document.createElement('source');
+                source.src = `/static/uploads/${messageData.media_path}`;
+                source.type = 'video/mp4';
+                video.appendChild(source);
+                video.appendChild(document.createTextNode('Your browser does not support the video tag.'));
+                mediaDiv.appendChild(video);
+            }
+
+            messageBubble.appendChild(mediaDiv);
+        }
+
+        // Add text content if present
+        if (messageData.content) {
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = messageData.content;
+            messageBubble.appendChild(messageContent);
+        }
+
+        const messageTime = document.createElement('div');
+        messageTime.className = 'message-time';
+        messageTime.textContent = new Date(messageData.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        messageBubble.appendChild(messageTime);
+        messageWrapper.appendChild(messageBubble);
+
+        chatMessages.appendChild(messageWrapper);
+    }
+
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Attach media button functionality
+    const attachMediaBtn = document.getElementById('attachMediaBtn');
+    const mediaInput = document.getElementById('mediaInput');
+
+    attachMediaBtn.addEventListener('click', function() {
+        mediaInput.click();
+    });
+
+    mediaInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            // Auto-submit when file is selected
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+});
+</script>
+{% endblock %}
