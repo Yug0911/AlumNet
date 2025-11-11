@@ -185,6 +185,7 @@ def login():
             user = User.query.filter_by(faculty_id=identifier).first()
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
+            session['username'] = user.username
             return redirect(url_for('dashboard'))
         flash('Invalid credentials')
     return render_template('login.html')
@@ -992,8 +993,12 @@ def remove_connection(connection_id):
 def notifications():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    user_notifications = Notification.query.filter_by(user_id=session['user_id']).order_by(Notification.created_at.desc()).all()
-    return render_template('notifications.html', notifications=user_notifications)
+    user = User.query.get(session['user_id'])
+    if not user:
+        session.pop('user_id', None)
+        return redirect(url_for('login'))
+    user_notifications = Notification.query.filter_by(user_id=user.id).order_by(Notification.created_at.desc()).all()
+    return render_template('notifications.html', user=user, notifications=user_notifications, format_datetime_ist=format_datetime_ist)
 
 @app.route('/mark_notification_read/<int:notification_id>', methods=['POST'])
 def mark_notification_read(notification_id):

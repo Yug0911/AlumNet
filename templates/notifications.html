@@ -51,11 +51,11 @@
                                     <p class="card-text mb-3">{{ notification.message }}</p>
                                     <div class="notification-actions d-flex gap-2 mt-2">
                                         {% if not notification.is_read %}
-                                        <button class="btn btn-sm btn-outline-primary" onclick="markAsRead({{ notification.id }})">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="markAsRead({ notification,id })">
                                             <i class="fas fa-check me-1"></i>Mark as Read
                                         </button>
                                         {% endif %}
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification({{ notification.id }})">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification({ notification,id })">
                                             <i class="fas fa-trash me-1"></i>Delete
                                         </button>
                                     </div>
@@ -146,7 +146,7 @@
 
 <script>
 function markAsRead(notificationId) {
-    fetch(`/mark_notification_read/${notificationId}`, {
+    fetch('/mark_notification_read/' + notificationId, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -179,7 +179,7 @@ function markAllAsRead() {
 
 function deleteNotification(notificationId) {
     if (confirm('Are you sure you want to delete this notification?')) {
-        fetch(`/delete_notification/${notificationId}`, {
+        fetch('/delete_notification/' + notificationId, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
